@@ -336,6 +336,19 @@ class TestS3SigV4Auth(BaseTestWithFixedDate):
     def test_blacklist_headers(self):
         self._test_blacklist_header('user-agent', 'botocore/1.4.11')
 
+    def test_does_not_use_sha256_if_md5_set(self):
+        self.request.headers.add_header('Content-MD5', 'foo')
+        self.auth.add_auth(self.request)
+        sha_header = self.request.headers.get('X-Amz-Content-SHA256')
+        self.assertEqual(sha_header, 'UNSIGNED-PAYLOAD')
+
+    def test_uses_sha256_if_md5_unset(self):
+        self.auth.add_auth(self.request)
+        sha_header = self.request.headers.get('X-Amz-Content-SHA256', None)
+        expected = ('dbd318c1c462aee872f41109a4dfd304'
+                    '8871a03dedd0fe0e757ced57dad6f2d7')
+        self.assertEqual(sha_header, expected)
+
 
 class TestSigV4(unittest.TestCase):
     def setUp(self):

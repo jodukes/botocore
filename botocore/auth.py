@@ -31,6 +31,7 @@ from botocore.compat import urlunsplit
 from botocore.compat import encodebytes
 from botocore.compat import six
 from botocore.compat import json
+from botocore.compat import MD5_AVAILABLE
 
 logger = logging.getLogger(__name__)
 
@@ -367,7 +368,15 @@ class S3SigV4Auth(SigV4Auth):
         super(S3SigV4Auth, self)._modify_request_before_signing(request)
         if 'X-Amz-Content-SHA256' in request.headers:
             del request.headers['X-Amz-Content-SHA256']
-        request.headers['X-Amz-Content-SHA256'] = self.payload(request)
+
+        # S3 allows optional body signing, so to minimize the performance
+        # impact, we opt to not SHA256 sign the body. Instead, we MD5 it.
+        # We will fall back to SHA256 when MD5 is not available, such as with
+        # FIPS systems.
+        if 'Content-MD5' in request.headers:
+            request.headers['X-Amz-Content-SHA256'] = 'UNSIGNED-PAYLOAD'
+        else:
+            request.headers['X-Amz-Content-SHA256'] = self.payload(request)
 
     def _normalize_url_path(self, path):
         # For S3, we do not normalize the path.

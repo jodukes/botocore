@@ -751,7 +751,7 @@ class TestSSEMD5(BaseMD5Test):
 
 
 class TestAddMD5(BaseMD5Test):
-    def test_does_not_add_md5_when_v4(self):
+    def test_adds_md5_when_v4(self):
         credentials = Credentials('key', 'secret')
         request_signer = RequestSigner(
             's3', 'us-east-1', 's3', 'v4', credentials, mock.Mock())
@@ -759,11 +759,11 @@ class TestAddMD5(BaseMD5Test):
                         'url': 'https://s3.us-east-1.amazonaws.com',
                         'method': 'PUT',
                         'headers': {}}
-        handlers.conditionally_calculate_md5(request_dict,
-                                             request_signer=request_signer)
-        self.assertTrue('Content-MD5' not in request_dict['headers'])
+        handlers.conditionally_calculate_md5(
+            request_dict, request_signer=request_signer)
+        self.assertTrue('Content-MD5' in request_dict['headers'])
 
-    def test_does_not_add_md5_when_s3v4(self):
+    def test_adds_md5_when_s3v4(self):
         credentials = Credentials('key', 'secret')
         request_signer = RequestSigner(
             's3', 'us-east-1', 's3', 's3v4', credentials, mock.Mock())
@@ -771,9 +771,9 @@ class TestAddMD5(BaseMD5Test):
                         'url': 'https://s3.us-east-1.amazonaws.com',
                         'method': 'PUT',
                         'headers': {}}
-        handlers.conditionally_calculate_md5(request_dict,
-                                             request_signer=request_signer)
-        self.assertTrue('Content-MD5' not in request_dict['headers'])
+        handlers.conditionally_calculate_md5(
+            request_dict, request_signer=request_signer)
+        self.assertTrue('Content-MD5' in request_dict['headers'])
 
     def test_conditional_does_not_add_when_md5_unavailable(self):
         credentials = Credentials('key', 'secret')
@@ -804,7 +804,7 @@ class TestAddMD5(BaseMD5Test):
             handlers.calculate_md5(
                 request_dict, request_signer=request_signer)
 
-    def test_adds_md5_when_not_v4(self):
+    def test_adds_md5_when_s3v2(self):
         credentials = Credentials('key', 'secret')
         request_signer = RequestSigner(
             's3', 'us-east-1', 's3', 's3', credentials, mock.Mock())
@@ -812,8 +812,8 @@ class TestAddMD5(BaseMD5Test):
                         'url': 'https://s3.us-east-1.amazonaws.com',
                         'method': 'PUT',
                         'headers': {}}
-        handlers.conditionally_calculate_md5(request_dict,
-                                             request_signer=request_signer)
+        handlers.conditionally_calculate_md5(
+            request_dict, request_signer=request_signer)
         self.assertTrue('Content-MD5' in request_dict['headers'])
 
     def test_add_md5_with_file_like_body(self):
