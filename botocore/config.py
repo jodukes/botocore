@@ -59,6 +59,10 @@ class Config(object):
           endpoint is being used then the addressing style will always
           be virtual.
 
+        * 'sha256_sign_s3v4_payload' -- Refers to whether or not to SHA256
+          sign payloads for UploadPart and PutObject requests. If False,
+          the Content-MD5 header will be populated. Default value is False.
+
         * 'addressing_style' -- Refers to the style in which to address
           s3 endpoints. Values must be a string that equals:
 

@@ -518,7 +518,7 @@ class BaseClient(object):
         return self.meta.service_model
 
     def _make_api_call(self, operation_name, api_params):
-        request_context = {}
+        request_context = {'client_config': self.meta.config}
         operation_model = self._service_model.operation_model(operation_name)
         request_dict = self._convert_to_request_dict(
             api_params, operation_model, context=request_context)

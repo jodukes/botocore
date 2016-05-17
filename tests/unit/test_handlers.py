@@ -24,6 +24,7 @@ from botocore.exceptions import ParamValidationError, MD5UnavailableError
 from botocore.exceptions import AliasConflictParameterError
 from botocore.awsrequest import AWSRequest
 from botocore.compat import quote, six
+from botocore.config import Config
 from botocore.docs.bcdoc.restdoc import DocumentStructure
 from botocore.docs.params import RequestParamsDocumenter
 from botocore.docs.example import RequestExampleDocumenter
@@ -751,6 +752,13 @@ class TestSSEMD5(BaseMD5Test):
 
 
 class TestAddMD5(BaseMD5Test):
+    def get_context(self, s3_config=None):
+        if s3_config is None:
+            s3_config = {}
+        return {
+            'client_config': Config(s3=s3_config)
+        }
+
     def test_adds_md5_when_v4(self):
         credentials = Credentials('key', 'secret')
         request_signer = RequestSigner(
@@ -759,8 +767,9 @@ class TestAddMD5(BaseMD5Test):
                         'url': 'https://s3.us-east-1.amazonaws.com',
                         'method': 'PUT',
                         'headers': {}}
+        context = self.get_context()
         handlers.conditionally_calculate_md5(
-            request_dict, request_signer=request_signer)
+            request_dict, request_signer=request_signer, context=context)
         self.assertTrue('Content-MD5' in request_dict['headers'])
 
     def test_adds_md5_when_s3v4(self):
@@ -771,9 +780,23 @@ class TestAddMD5(BaseMD5Test):
                         'url': 'https://s3.us-east-1.amazonaws.com',
                         'method': 'PUT',
                         'headers': {}}
+        context = self.get_context({'sha256_sign_s3v4_payload': False})
         handlers.conditionally_calculate_md5(
-            request_dict, request_signer=request_signer)
+            request_dict, request_signer=request_signer, context=context)
         self.assertTrue('Content-MD5' in request_dict['headers'])
+
+    def test_does_not_add_md5_when_config_is_set(self):
+        credentials = Credentials('key', 'secret')
+        request_signer = RequestSigner(
+            's3', 'us-east-1', 's3', 's3v4', credentials, mock.Mock())
+        request_dict = {'body': b'bar',
+                        'url': 'https://s3.us-east-1.amazonaws.com',
+                        'method': 'PUT',
+                        'headers': {}}
+        context = self.get_context({'sha256_sign_s3v4_payload': True})
+        handlers.conditionally_calculate_md5(
+            request_dict, request_signer=request_signer, context=context)
+        self.assertFalse('Content-MD5' in request_dict['headers'])
 
     def test_conditional_does_not_add_when_md5_unavailable(self):
         credentials = Credentials('key', 'secret')
@@ -784,10 +807,11 @@ class TestAddMD5(BaseMD5Test):
                         'method': 'PUT',
                         'headers': {}}
 
+        context = self.get_context()
         self.set_md5_available(False)
         with mock.patch('botocore.handlers.MD5_AVAILABLE', False):
             handlers.conditionally_calculate_md5(
-                request_dict, request_signer=request_signer)
+                request_dict, request_signer=request_signer, context=context)
             self.assertFalse('Content-MD5' in request_dict['headers'])
 
     def test_add_md5_raises_error_when_md5_unavailable(self):
@@ -812,8 +836,9 @@ class TestAddMD5(BaseMD5Test):
                         'url': 'https://s3.us-east-1.amazonaws.com',
                         'method': 'PUT',
                         'headers': {}}
+        context = self.get_context()
         handlers.conditionally_calculate_md5(
-            request_dict, request_signer=request_signer)
+            request_dict, request_signer=request_signer, context=context)
         self.assertTrue('Content-MD5' in request_dict['headers'])
 
     def test_add_md5_with_file_like_body(self):
