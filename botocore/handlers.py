@@ -150,17 +150,8 @@ def _calculate_md5_from_file(fileobj):
 
 def conditionally_calculate_md5(params, context, request_signer, **kwargs):
     """Only add a Content-MD5 if the system supports it."""
-    if not MD5_AVAILABLE:
-        return
-
-    s3_config = context.get('client_config').s3
-    if s3_config is None:
-        s3_config = {}
-    use_sha256 = s3_config.get('sha256_sign_s3v4_payload', False)
-    if request_signer.signature_version == 's3v4' and use_sha256:
-        return
-
-    calculate_md5(params, **kwargs)
+    if MD5_AVAILABLE:
+        calculate_md5(params, **kwargs)
 
 
 def validate_bucket_name(params, **kwargs):
