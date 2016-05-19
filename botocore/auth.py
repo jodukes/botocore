@@ -367,7 +367,8 @@ class S3SigV4Auth(SigV4Auth):
         super(S3SigV4Auth, self)._modify_request_before_signing(request)
         if 'X-Amz-Content-SHA256' in request.headers:
             del request.headers['X-Amz-Content-SHA256']
-        request.headers['X-Amz-Content-SHA256'] = self.payload(request)
+        logger.debug("No more signing the body!")
+        request.headers['X-Amz-Content-SHA256'] = "UNSIGNED-PAYLOAD"
 
     def _normalize_url_path(self, path):
         # For S3, we do not normalize the path.

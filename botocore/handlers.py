@@ -150,9 +150,9 @@ def _calculate_md5_from_file(fileobj):
 
 def conditionally_calculate_md5(params, **kwargs):
     """Only add a Content-MD5 when not using sigv4"""
-    signer = kwargs['request_signer']
-    if signer.signature_version not in ['v4', 's3v4'] and MD5_AVAILABLE:
-        calculate_md5(params, **kwargs)
+    # signer = kwargs['request_signer']
+    # if signer.signature_version not in ['v4', 's3v4'] and MD5_AVAILABLE:
+    #     calculate_md5(params, **kwargs)
 
 
 def validate_bucket_name(params, **kwargs):
