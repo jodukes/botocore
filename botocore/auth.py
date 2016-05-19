@@ -369,14 +369,8 @@ class S3SigV4Auth(SigV4Auth):
         if 'X-Amz-Content-SHA256' in request.headers:
             del request.headers['X-Amz-Content-SHA256']
 
-        # S3 allows optional body signing, so to minimize the performance
-        # impact, we opt to not SHA256 sign the body. Instead, we MD5 it.
-        # We will fall back to SHA256 when MD5 is not available, such as with
-        # FIPS systems.
-        if 'Content-MD5' in request.headers:
-            request.headers['X-Amz-Content-SHA256'] = 'UNSIGNED-PAYLOAD'
-        else:
-            request.headers['X-Amz-Content-SHA256'] = self.payload(request)
+        logger.debug("Doing both sha and md5.")
+        request.headers['X-Amz-Content-SHA256'] = self.payload(request)
 
     def _normalize_url_path(self, path):
         # For S3, we do not normalize the path.
