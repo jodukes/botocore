@@ -99,7 +99,12 @@ class PageIterator(object):
         starting_truncation = 0
         self._inject_starting_params(current_kwargs)
         while True:
-            response = self._make_request(current_kwargs)
+            try:
+                response = self._make_request(current_kwargs)
+            except Exception:
+                if previous_next_token is not None:
+                    self.resume_token = previous_next_token
+                raise
             parsed = self._extract_parsed_response(response)
             if first_request:
                 # The first request is handled differently.  We could
