@@ -47,6 +47,10 @@ RESTRICTED_REGIONS = [
 ]
 RETRYABLE_HTTP_ERRORS = (requests.Timeout, requests.ConnectionError)
 S3_ACCELERATE_WHITELIST = ['dualstack']
+DEFAULT_LOG_FORMAT = (
+    '%(asctime)s - %(threadName)s - %(name)s - %(levelname)s '
+    '- %(message).15000s'
+)
 
 
 class _RetriesExceededError(Exception):

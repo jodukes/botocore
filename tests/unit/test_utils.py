@@ -10,7 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+import logging
 from tests import unittest
 from dateutil.tz import tzutc, tzoffset
 import datetime
@@ -50,6 +50,7 @@ from botocore.utils import switch_host_s3_accelerate
 from botocore.utils import deep_merge
 from botocore.utils import S3RegionRedirector
 from botocore.utils import ContainerMetadataFetcher
+from botocore.utils import DEFAULT_LOG_FORMAT
 from botocore.model import DenormalizedStructureBuilder
 from botocore.model import ShapeResolver
 from botocore.config import Config
@@ -1496,5 +1497,20 @@ class TestContainerMetadataFetcher(unittest.TestCase):
         self.assertEqual(self.http.get.call_count, fetcher.RETRY_ATTEMPTS)
 
 
-if __name__ == '__main__':
-    unittest.main()
+class TestDefaultLogFormat(unittest.TestCase):
+    def setUp(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+        self.stream = six.StringIO()
+        handler = logging.StreamHandler(self.stream)
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(DEFAULT_LOG_FORMAT)
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
+    def test_log_large_message(self):
+        # The logger on some systems can only handle so much for a given
+        # message. The log format should truncate past a certain point.
+        message_size = 16000
+        self.logger.debug(message_size * '0')
+        self.assertLess(len(self.stream.getvalue()), message_size)

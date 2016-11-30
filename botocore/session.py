@@ -36,6 +36,7 @@ from botocore.model import ServiceModel
 from botocore import paginate
 from botocore import waiter
 from botocore import retryhandler, translate
+from botocore.utils import DEFAULT_LOG_FORMAT
 
 
 class Session(object):
@@ -102,7 +103,7 @@ class Session(object):
     }
 
     #: The default format string to use when configuring the botocore logger.
-    LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    LOG_FORMAT = DEFAULT_LOG_FORMAT
 
     def __init__(self, session_vars=None, event_hooks=None,
                  include_builtin_handlers=True, profile=None):
