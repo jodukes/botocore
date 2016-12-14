@@ -340,7 +340,7 @@ class TestS3SigV4Auth(BaseTestWithFixedDate):
 
     def test_blacklist_expect_headers(self):
         self._test_blacklist_header('expect', '100-continue')
-        
+
     def test_blacklist_content_disposition(self):
         self._test_blacklist_header(
             'content-disposition',
