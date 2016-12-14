@@ -340,6 +340,11 @@ class TestS3SigV4Auth(BaseTestWithFixedDate):
 
     def test_blacklist_expect_headers(self):
         self._test_blacklist_header('expect', '100-continue')
+        
+    def test_blacklist_content_disposition(self):
+        self._test_blacklist_header(
+            'content-disposition',
+            'attachment; filename=5小時接力起跑.jpg;')
 
     def test_blacklist_headers(self):
         self._test_blacklist_header('user-agent', 'botocore/1.4.11')
