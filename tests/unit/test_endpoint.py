@@ -44,9 +44,12 @@ class RecordStreamResets(six.StringIO):
         six.StringIO.__init__(self, value)
         self.total_resets = 0
 
-    def seek(self, where):
+    def seek(self, offset, whence=None):
         self.total_resets += 1
-        six.StringIO.seek(self, where)
+        if not whence:
+            six.StringIO.seek(self, offset)
+        else:
+            six.StringIO.seek(self, offset, whence)
 
 
 class TestEndpointBase(unittest.TestCase):

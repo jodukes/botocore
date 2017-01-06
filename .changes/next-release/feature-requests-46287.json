@@ -1,0 +1,5 @@
+{
+  "category": "requests",
+  "type": "feature",
+  "description": "Update vendored version of requests to 2.12.4"
+}
