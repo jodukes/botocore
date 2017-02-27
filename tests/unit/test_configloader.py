@@ -15,6 +15,9 @@
 from tests import unittest, BaseEnvVar
 import os
 import mock
+import tempfile
+import shutil
+import sys
 
 import botocore.exceptions
 from botocore.configloader import raw_config_parse, load_config, \
@@ -30,6 +33,22 @@ def path(filename):
 
 
 class TestConfigLoader(BaseEnvVar):
+
+    def setUp(self):
+        self.tempdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tempdir)
+
+    def create_config_file(self, filename, contents=None):
+        if contents is None:
+            contents = (
+                '[default]\n'
+                'aws_access_key_id = foo\n'
+                'aws_secret_access_key = bar'
+            )
+        with open(filename, 'w') as f:
+            f.write(contents)
 
     def test_config_not_found(self):
         with self.assertRaises(botocore.exceptions.ConfigNotFound):
@@ -110,18 +129,21 @@ class TestConfigLoader(BaseEnvVar):
         self.assertEqual(third_config['aws_security_token'], 'third_fiebaz')
 
     def test_unicode_bytes_path_not_found(self):
+        filename = os.path.join(
+            self.tempdir, u'aws_config_unicode\u2713')
+        filename = filename.encode('utf-8').decode(
+            sys.getfilesystemencoding(), 'ignore')
         with self.assertRaises(botocore.exceptions.ConfigNotFound):
-            with mock.patch('sys.getfilesystemencoding') as encoding:
-                encoding.return_value = 'utf-8'
-                load_config(path(b'\xe2\x9c\x93'))
+            load_config(filename)
 
     def test_unicode_bytes_path(self):
-        filename = path(b'aws_config_unicode\xe2\x9c\x93')
-        with mock.patch('sys.getfilesystemencoding') as encoding:
-            encoding.return_value = 'utf-8'
-            loaded_config = load_config(filename)
+        filename = os.path.join(
+            self.tempdir, u'aws_config_unicode\u2713')
+        self.create_config_file(filename)
+        filename = filename.encode('utf-8').decode(
+            sys.getfilesystemencoding(), 'ignore')
+        loaded_config = load_config(filename)
         self.assertIn('default', loaded_config['profiles'])
-        self.assertIn('personal', loaded_config['profiles'])
 
 
 if __name__ == "__main__":
